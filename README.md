@@ -158,3 +158,32 @@ room_no | rate | room_type | no_guests
          503 | 143.00 | PREMIER PLUS |
 
     (51 rows)
+
+7.  The hotel manager wishes to know how many rooms were occupied any time during the previous month - find that information.
+
+cyf_hotels=# select count (id) from reservations where checkin_date between '2023-07-01' and '2023-07-31';
+count
+
+---
+
+    41
+
+(1 row)
+
+8.  Get the total number of nights that customers stayed in rooms on the second floor (rooms 201 - 299).
+
+cyf_hotels=# select floor, sum(nights) as total_nights from (select trunc(room_no/100) as floor, (checkout_date - checkin_date) as nights from reservations where trunc(room_no/100)=2 ) subquery group by floor;
+floor | total_nights
+-------+--------------
+2 | 63
+(1 row)
+
+9.  How many invoices are for more than £300.00 and what is their grand total and average amount?
+
+cyf_hotels=# select count(\*) as invoices, sum(total) as grand_total, avg(total) as average_amount from invoices where total >= 300;
+invoices | grand_total | average_amount  
+----------+-------------+----------------------
+25 | 12928.00 | 517.1200000000000000
+(1 row)
+
+10. Bonus Question: list the number of nights stay for each floor of the hotel (floor no is the hundreds part of room number, e.g. room **3**12 is on floor **3**)
