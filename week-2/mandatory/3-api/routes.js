@@ -24,6 +24,7 @@ router.get("/suppliers", async (req, res) => {
 });
 
 router.get("/products", async (req, res) => {
+  const queryPattern = req.query.name;
   try {
     const result = await db.query(
       "SELECT \
@@ -32,7 +33,9 @@ router.get("/products", async (req, res) => {
        suppliers.supplier_name \
        FROM products \
        JOIN product_availability ON products.id=product_availability.prod_id \
-       JOIN suppliers ON product_availability.supp_id=suppliers.id;"
+        JOIN suppliers ON product_availability.supp_id=suppliers.id \
+        WHERE product_name ILIKE $1",
+      [`%${queryPattern}`]
     );
     res.json(result.rows);
   } catch (error) {
