@@ -8,6 +8,7 @@ const {
   getCustomerById,
   addCustomer,
   deleteCustomer,
+  updateCustomer,
 } = require("./controllers/customers-controllers");
 
 const {
@@ -27,6 +28,8 @@ router.get("/customers", getAllCustomers);
 router.get("/customers/:cid", getCustomerById);
 
 router.post("/customers", addCustomer);
+
+router.put("/customers/:cid", updateCustomer);
 
 router.delete("/customers/:cid", deleteCustomer);
 

@@ -63,7 +63,29 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
+const updateCustomer = async (req, res) => {
+  const custId = req.params.cid;
+  const newName = req.body.name;
+  const newAddress = req.body.address;
+  const newCity = req.body.city;
+  const newCountry = req.body.country;
+
+  try {
+    await db.query(
+      "UPDATE customers \
+    SET name = $2, address = $3, city = $4, country = $5\
+    WHERE id = $1",
+      [custId, newName, newAddress, newCity, newCountry]
+    );
+    res.status(201).json({ message: "Customer successfully updated" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
 exports.getAllCustomers = getAllCustomers;
 exports.getCustomerById = getCustomerById;
 exports.addCustomer = addCustomer;
 exports.deleteCustomer = deleteCustomer;
+exports.updateCustomer = updateCustomer;
