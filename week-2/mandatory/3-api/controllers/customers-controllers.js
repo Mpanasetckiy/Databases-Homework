@@ -44,6 +44,26 @@ const addCustomer = async (req, res) => {
   }
 };
 
+const deleteCustomer = async (req, res) => {
+  const custId = req.params.cid;
+  try {
+    const result = await db.query(
+      "SELECT * FROM orders WHERE customer_id = $1",
+      [custId]
+    );
+
+    if (result.rows.length > 0) {
+      return res.status(400).json({ error: "Customer has active orders" });
+    }
+    await db.query("DELETE FROM customers WHERE id = $1", [custId]);
+    res.status(201).json({ message: "Customer successfully deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
 exports.getAllCustomers = getAllCustomers;
 exports.getCustomerById = getCustomerById;
 exports.addCustomer = addCustomer;
+exports.deleteCustomer = deleteCustomer;

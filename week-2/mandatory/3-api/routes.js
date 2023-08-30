@@ -7,6 +7,7 @@ const {
   getAllCustomers,
   getCustomerById,
   addCustomer,
+  deleteCustomer,
 } = require("./controllers/customers-controllers");
 
 const {
@@ -18,6 +19,7 @@ const {
 const {
   addOrderByCustId,
   deleteOrder,
+  getOrdersByCustId,
 } = require("./controllers/orders-controllers");
 
 router.get("/customers", getAllCustomers);
@@ -25,6 +27,20 @@ router.get("/customers", getAllCustomers);
 router.get("/customers/:cid", getCustomerById);
 
 router.post("/customers", addCustomer);
+
+router.delete("/customers/:cid", deleteCustomer);
+
+router.get("/products", getAllProducts);
+
+router.post("/products", addProduct);
+
+router.post("/products/:cid/orders", addOrderByCustId);
+
+router.get("/customers/:cid/orders", getOrdersByCustId);
+
+router.delete("/orders/:oid", deleteOrder);
+
+router.post("/availability", addProductAvailability);
 
 router.get("/suppliers", async (req, res) => {
   try {
@@ -35,15 +51,5 @@ router.get("/suppliers", async (req, res) => {
     res.status(500).json({ error: "An error occurred" });
   }
 });
-
-router.get("/products", getAllProducts);
-
-router.post("/products", addProduct);
-
-router.post("/products/:cid/orders", addOrderByCustId);
-
-router.delete("/orders/:oid", deleteOrder);
-
-router.post("/availability", addProductAvailability);
 
 module.exports = router;

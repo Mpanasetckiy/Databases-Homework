@@ -51,5 +51,30 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const getOrdersByCustId = async (req, res) => {
+  const custId = req.params.cid;
+
+  try {
+    const result = await db.query(
+      "SELECT orders.order_date, orders.order_reference,\
+       products.product_name, order_items.quantity, \
+       product_availability.unit_price, \
+       suppliers.supplier_name \
+       FROM orders \
+       JOIN order_items ON orders.id=order_items.order_id\
+       JOIN products ON order_items.product_id = products.id \
+       JOIN product_availability ON order_items.product_id = product_availability.prod_id AND order_items.supplier_id=product_availability.supp_id \
+       JOIN suppliers ON product_availability.supp_id=suppliers.id \
+       WHERE orders.customer_id = $1",
+      [custId]
+    );
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
 exports.addOrderByCustId = addOrderByCustId;
 exports.deleteOrder = deleteOrder;
+exports.getOrdersByCustId = getOrdersByCustId;
