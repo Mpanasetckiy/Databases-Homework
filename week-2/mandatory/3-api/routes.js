@@ -3,49 +3,27 @@ const express = require("express");
 const router = express.Router();
 const db = require("./db");
 
-router.get("/customers", async (req, res) => {
-  try {
-    const result = await db.query("SELECT * FROM customers");
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
-  }
-});
+const {
+  getAllCustomers,
+  getCustomerById,
+  addCustomer,
+} = require("./controllers/customers-controllers");
 
-router.get("/customers/:cid", async (req, res) => {
-  const custId = parseInt(req.params.cid);
-  try {
-    const result = await db.query("SELECT * FROM customers WHERE id= $1", [
-      custId,
-    ]);
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
-  }
-});
+const {
+  getAllProducts,
+  addProduct,
+} = require("./controllers/products-controllers");
 
-router.post("/customers", async (req, res) => {
-  const newName = req.body.name;
-  const newAddress = req.body.address;
-  const newCity = req.body.city;
-  const newCountry = req.body.country;
+const {
+  addOrderByCustId,
+  deleteOrder,
+} = require("./controllers/orders-controllers");
 
-  try {
-    const result = await db.query(
-      "INSERT INTO customers (name, address, city, country) \
-    VALUES ($1, $2, $3, $4) RETURNING id",
-      [newName, newAddress, newCity, newCountry]
-    );
-    const newId = result.rows[0].id;
-    console.log(`New Customer id = ${newId}`);
-    res.status(200).json({ lastId: newId });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
-  }
-});
+router.get("/customers", getAllCustomers);
+
+router.get("/customers/:cid", getCustomerById);
+
+router.post("/customers", addCustomer);
 
 router.get("/suppliers", async (req, res) => {
   try {
@@ -57,87 +35,13 @@ router.get("/suppliers", async (req, res) => {
   }
 });
 
-router.get("/products", async (req, res) => {
-  const queryPattern = req.query.name;
-  try {
-    let query = `
-    SELECT
-      products.id, products.product_name,
-      product_availability.unit_price,
-      suppliers.supplier_name
-    FROM products
-    JOIN product_availability ON products.id=product_availability.prod_id
-    JOIN suppliers ON product_availability.supp_id=suppliers.id
-  `;
+router.get("/products", getAllProducts);
 
-    if (queryPattern) {
-      query += "WHERE product_name ILIKE $1";
-    }
+router.post("/products", addProduct);
 
-    const params = queryPattern ? [`%${queryPattern}`] : [];
+router.post("/products/:cid/orders", addOrderByCustId);
 
-    const result = await db.query(query, params);
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
-  }
-});
-
-router.post("/products", async (req, res) => {
-  const newName = req.body.name;
-  try {
-    const result = await db.query(
-      "INSERT INTO products (product_name) \
-    VALUES ($1) RETURNING id",
-      [newName]
-    );
-    const newId = result.rows[0].id;
-    console.log(`New product id = ${newId}`);
-    res.status(200).json({ lastId: newId });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
-  }
-});
-
-router.post("/products/:cid/orders", async (req, res) => {
-  const custId = req.body.cust_id;
-  const orderDate = req.body.order_date;
-  const orderReference = req.body.order_reference;
-
-  try {
-    const result = await db.query(
-      "SELECT * FROM customers \
-    WHERE id = $1 ",
-      [custId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(400).json({ error: "Customer doesn't exist" });
-    }
-
-    const response = await db.query(
-      "SELECT * FROM orders \
-    WHERE order_reference = $1",
-      [orderReference]
-    );
-
-    if (response.rows.length > 0) {
-      return res.status(400).json({ error: "Order already exists" });
-    }
-
-    await db.query(
-      "INSERT INTO orders (order_date, order_reference, customer_id) \
-    VALUES ($1, $2, $3)",
-      [orderDate, orderReference, custId]
-    );
-    res.status(201).json({ message: "Order successfully created" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "An error occurred" });
-  }
-});
+router.delete("/orders/:oid", deleteOrder);
 
 router.post("/availability", async (req, res) => {
   const prodId = req.body.product_id;
