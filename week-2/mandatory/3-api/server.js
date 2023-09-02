@@ -2,6 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 
+// dotenv.js
+const dotenv = require("dotenv");
+dotenv.config();
+
 const routes = require("./routes");
 
 app.use(bodyParser.json());
